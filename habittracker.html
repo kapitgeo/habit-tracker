@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>habits.io</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 
+Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #37352f;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: white;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #e5e5e5;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .nav {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .nav-item {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background: #f1f3f4;
+        }
+
+        .nav-item.active {
+            background: #e8f0fe;
+            color: #1a73e8;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .section-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #2d3748;
+        }
+
+        .goals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .goal-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid #e5e5e5;
+        }
+
+        .goal-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+        }
+
+        .goal-category {
+            display: inline-block;
+            background: #f1f3f4;
+            color: #5f6368;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .habit-blocks {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .day-label {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #5f6368;
+            margin-bottom: 0.5rem;
+        }
+
+        .habit-block {
+            aspect-ratio: 1;
+            background: #e8eaed;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .habit-block:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .habit-block.completed {
+            background: #34a853;
+            color: white;
+        }
+
+        .habit-block.stacked {
+            height: 60px;
+            background: linear-gradient(to top, #34a853, #137333);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e8eaed;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #34a853;
+            transition: width 0.3s ease;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: #2d3748;
+        }
+
+        .stat-label {
+            color: #5f6368;
+            font-size: 0.8rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e5e5e5;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .calendar-day:hover {
+            transform: scale(1.05);
+        }
+
+        .calendar-day.has-habits {
+            background: #e8f5e8;
+        }
+
+        .calendar-day.high-completion {
+            background: #34a853;
+            color: white;
+        }
+
+        .calendar-day.medium-completion {
+            background: #7cb342;
+            color: white;
+        }
+
+        .calendar-day.low-completion {
+            background: #c8e6c9;
+        }
+
+        .year-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .year-category {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid #e5e5e5;
+        }
+
+        .category-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #2d3748;
+        }
+
+        .yearly-boxes {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .yearly-box {
+            height: 80px;
+            width: 100%;
+            background: #e8eaed;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .yearly-stack {
+            width: 100%;
+            background: #34a853;
+            transition: height 0.3s ease;
+            border-radius: 0 0 6px 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            min-height: 12px;
+        }
+
+        .month-labels {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: #5f6368;
+            text-align: center;
+        }
+
+        .cumulative-stat {
+            background: #f8f9fa;
+            border: 1px solid #e8eaed;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .cumulative-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 0.25rem;
+        }
+
+        .cumulative-label {
+            color: #5f6368;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .application-input {
+            width: 100%;
+            padding: 0.4rem;
+            border: 1px solid #e5e5e5;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-top: 0.25rem;
+            text-align: center;
+        }
+
+        .daily-applications {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .app-input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .earnings-display {
+            background: #e8f5e8;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+
+        .applications-total {
+            font-weight: 600;
+            color: #1976d2;
+        }
+
+        .earnings-input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .add-goal-btn {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .add-goal-btn:hover {
+            background: #1557b0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .modal input, .modal select {
+            width: 100%;
+            padding: 0.75rem;
+            margin: 0.5rem 0;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+        }
+
+        @media (max-width: 768px) {
+            .nav {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+            
+            .goals-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .habit-blocks {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 0.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>habits.io</h1>
+        <nav class="nav">
+            <div class="nav-item active" 
+onclick="switchView('weekly')">Weekly</div>
+            <div class="nav-item" 
+onclick="switchView('monthly')">Monthly</div>
+            <div class="nav-item" 
+onclick="switchView('yearly')">Yearly</div>
+        </nav>
+    </div>
+
+    <div class="container">
+        <!-- Weekly View -->
+        <div class="view active" id="weekly-view">
+            <div class="section-header">Weekly Habits</div>
+            <div class="goals-grid" id="weekly-goals">
+                <!-- Goals will be populated here -->
+            </div>
+            <button class="add-goal-btn" onclick="openAddGoalModal()">Add 
+New Goal</button>
+        </div>
+
+        <!-- Monthly View -->
+        <div class="view" id="monthly-view">
+            <div class="section-header">Monthly Progress</div>
+            <div class="calendar-grid" id="monthly-calendar">
+                <!-- Calendar will be populated here -->
+            </div>
+        </div>
+
+        <!-- Yearly View -->
+        <div class="view" id="yearly-view">
+            <div class="section-header">Yearly Overview</div>
+            <div class="year-overview" id="yearly-overview">
+                <!-- Year overview will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Goal Modal -->
+    <div class="modal" id="goal-modal">
+        <div class="modal-content">
+            <h3>Add New Goal</h3>
+            <input type="text" id="goal-title" placeholder="Goal Title">
+            <select id="goal-category">
+                <option value="finances">Finances</option>
+                <option value="social-media">Social Media</option>
+                <option value="fitness">Fitness</option>
+                <option value="startup">Startup</option>
+                <option value="learning">Learning</option>
+            </select>
+            <select id="goal-type">
+                <option value="daily">Daily Habit</option>
+                <option value="instance">Instance-based</option>
+            </select>
+            <input type="number" id="goal-target" placeholder="Weekly Target (e.g., 50 for brand deals)">
+            <button onclick="addGoal()">Add Goal</button>
+            <button onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+    <script>
+        // Sample data structure
+        let goals = [
+            {
+                id: 1,
+                title: "UGC & Content Brand Deals",
+                category: "finances",
+                weeklyTarget: 50,
+                completedDays: [false, false, false, false, false, false, false],
+                earnings: 0,
+                dailyApplications: [0, 0, 0, 0, 0, 0, 0], // Track applications per day
+            },
+            {
+                id: 2,
+                title: "Learning AI Platforms",
+                category: "learning",
+                weeklyTarget: 10,
+                completedDays: [false, false, false, false, false, false, false],
+                hoursInvested: 0,
+            },
+            {
+                id: 3,
+                title: "Boxing Sessions",
+                category: "fitness",
+                weeklyTarget: 3,
+                completedDays: [false, false, false, false, false, false, false],
+                sessionsCompleted: 0,
+            },
+            {
+                id: 4,
+                title: "GMAT Study",
+                category: "learning",
+                weeklyTarget: 7,
+                completedDays: [false, false, false, false, false, false, false],
+                hoursStudied: 0,
+            }
+        ];
+
+        const categoryColors = {
+            finances: '#4caf50',
+            'social-media': '#2196f3',
+            fitness: '#ff9800',
+            startup: '#9c27b0',
+            learning: '#f44336'
+        };
+
+        const dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        function switchView(view) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(view + '-view').classList.add('active');
+            event.target.classList.add('active');
+            
+            if (view === 'weekly') renderWeeklyView();
+            if (view === 'monthly') renderMonthlyView();
+            if (view === 'yearly') renderYearlyView();
+        }
+
+        function renderWeeklyView() {
+            const container = document.getElementById('weekly-goals');
+            container.innerHTML = '';
+            
+            goals.forEach(goal => {
+                const goalCard = document.createElement('div');
+                goalCard.className = 'goal-card';
+                
+                let goalContent = '';
+
+                if (goal.type === 'instance') {
+                    const instanceCount = goal.instances.length;
+                    goalContent = `
+                        <div class="goal-title">${goal.title}</div>
+                        <div class="goal-category" style="background-color: ${categoryColors[goal.category]}20; color: ${categoryColors[goal.category]}">${goal.category.replace('-', ' ')}</div>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-value">${instanceCount}</div>
+                                <div class="stat-label">Completed</div>
+                            </div>
+                        </div>
+                        <button class="add-goal-btn" onclick="addInstance(${goal.id})">Add Instance</button>
+                    `;
+                } else {
+                    const completedCount = goal.completedDays.filter(Boolean).length;
+                    const progressPercentage = (completedCount / 7) * 100;
+                    
+                    let additionalContent = '';
+                    
+                    if (goal.title === "UGC & Content Brand Deals") {
+                        const totalApplications = goal.dailyApplications.reduce((sum, apps) => sum + apps, 0);
+                        additionalContent = `
+                            <div class="applications-summary">
+                                <span class="applications-total">${totalApplications}</span> / ${goal.weeklyTarget} applications this week
+                            </div>
+                            
+                            <div class="daily-applications">
+                                ${dayLabels.map((day, index) => `
+                                    <div class="app-input-container">
+                                        <div class="day-label">${day}</div>
+                                        <input type="number" class="application-input" value="${goal.dailyApplications[index] || ''}" placeholder="0" min="0" onchange="updateDailyApplications(${goal.id}, ${index}, this.value)">
+                                    </div>
+                                `).join('')}
+                            </div>
+                            
+                            <div class="earnings-display">
+                                Weekly Earnings: ${goal.earnings || 0}
+                            </div>
+                            <input type="number" class="earnings-input" placeholder="Enter weekly earnings" onchange="updateEarnings(${goal.id}, this.value)">
+                        `;
+                    } else if (goal.category === 'finances') {
+                        additionalContent = `
+                            <div class="earnings-display">
+                                Weekly Earnings: ${goal.earnings || 0}
+                            </div>
+                            <input type="number" class="earnings-input" placeholder="Enter earnings" onchange="updateEarnings(${goal.id}, this.value)">
+                        `;
+                    }
+                    
+                    goalContent = `
+                        <div class="goal-title">${goal.title}</div>
+                        <div class="goal-category" style="background-color: ${categoryColors[goal.category]}20; color: ${categoryColors[goal.category]}">${goal.category.replace('-', ' ')}</div>
+                        
+                        <div class="habit-blocks">
+                            ${dayLabels.map(day => `<div class="day-label">${day}</div>`).join('')}
+                            ${goal.completedDays.map((completed, index) => `
+                                <div class="habit-block ${completed ? 'completed' : ''}" onclick="toggleHabit(${goal.id}, ${index})">
+                                    ${completed ? '✓' : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${progressPercentage}%"></div>
+                        </div>
+                        
+                        <div class="stats">
+                            <div class="stat-item">
+                                <div class="stat-value">${completedCount}</div>
+                                <div class="stat-label">Completed</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${goal.weeklyTarget}</div>
+                                <div class="stat-label">Target</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${Math.round(progressPercentage)}%</div>
+                                <div class="stat-label">Progress</div>
+                            </div>
+                        </div>
+                        
+                        ${additionalContent}
+                    `;
+                }
+                
+                goalCard.innerHTML = goalContent;
+                container.appendChild(goalCard);
+            });
+        }
+
+        function renderMonthlyView() {
+            const container = document.getElementById('monthly-calendar');
+            container.innerHTML = '';
+            
+            // Generate calendar for current month
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            const dailyCompletion = {};
+
+            goals.forEach(goal => {
+                if (goal.type === 'instance') {
+                    goal.instances.forEach(instance => {
+                        const date = new Date(instance);
+                        if (date.getFullYear() === year && date.getMonth() === month) {
+                            const day = date.getDate();
+                            dailyCompletion[day] = (dailyCompletion[day] || 0) + 1;
+                        }
+                    });
+                } else {
+                    goal.completedDays.forEach((completed, index) => {
+                        if (completed) {
+                            const day = new Date(year, month, today.getDate() - today.getDay() + index + 1).getDate();
+                             dailyCompletion[day] = (dailyCompletion[day] || 0) + 1;
+                        }
+                    });
+                }
+            });
+
+            const maxCompletion = Math.max(...Object.values(dailyCompletion), 1);
+            
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = day;
+                
+                const completionCount = dailyCompletion[day] || 0;
+                if (completionCount > 0) {
+                    const completionLevel = completionCount / maxCompletion;
+                    if (completionLevel > 0.8) {
+                        dayElement.classList.add('high-completion');
+                    } else if (completionLevel > 0.5) {
+                        dayElement.classList.add('medium-completion');
+                    } else {
+                        dayElement.classList.add('low-completion');
+                    }
+                }
+                
+                container.appendChild(dayElement);
+            }
+        }
+
+        function renderYearlyView() {
+            const container = document.getElementById('yearly-overview');
+            container.innerHTML = '';
+
+            const yearlyData = calculateYearlyData();
+
+            const categories = {
+                finances: {
+                    goals: goals.filter(g => g.category === 'finances'),
+                    getCumulativeValue: () => yearlyData.totalEarnings,
+                    getCumulativeLabel: () => 'Total Earnings This Year',
+                    formatValue: (val) => `${val.toLocaleString()}`
+                },
+                'social-media': {
+                    goals: goals.filter(g => g.category === 'social-media'),
+                    getCumulativeValue: () => yearlyData.totalApplications,
+                    getCumulativeLabel: () => 'Total Applications Submitted',
+                    formatValue: (val) => val.toString()
+                },
+                fitness: {
+                    goals: goals.filter(g => g.category === 'fitness'),
+                    getCumulativeValue: () => yearlyData.totalSessions,
+                    getCumulativeLabel: () => 'Total Fitness Classes This Year',
+                    formatValue: (val) => val.toString()
+                },
+                startup: {
+                    goals: goals.filter(g => g.category === 'startup'),
+                    getCumulativeValue: () => 0, // No data for startup yet
+                    getCumulativeLabel: () => 'Total Startup Hours This Year',
+                    formatValue: (val) => val.toString()
+                },
+                learning: {
+                    goals: goals.filter(g => g.category === 'learning'),
+                    getCumulativeValue: () => yearlyData.totalHours,
+                    getCumulativeLabel: () => 'Total Learning Hours This Year',
+                    formatValue: (val) => val.toString()
+                }
+            };
+
+            Object.entries(categories).forEach(([category, data]) => {
+                const categoryCard = document.createElement('div');
+                categoryCard.className = 'year-category';
+
+                const cumulativeValue = data.getCumulativeValue();
+                const monthlyData = yearlyData.monthlyData[category] || Array(12).fill(0);
+                const maxValue = Math.max(...monthlyData, 1);
+
+                categoryCard.innerHTML = `
+                    <div class="category-title" style="color: ${categoryColors[category]}">${category.replace('-', ' ').toUpperCase()}</div>
+                    
+                    <div class="cumulative-stat">
+                        <div class="cumulative-value" style="color: ${categoryColors[category]}">
+                            ${data.formatValue(cumulativeValue)}
+                        </div>
+                        <div class="cumulative-label">${data.getCumulativeLabel()}</div>
+                    </div>
+                    
+                    <div class="yearly-boxes">
+                        ${monthlyData.map(monthValue => {
+                            const stackHeight = Math.max(8, (monthValue / maxValue) * 100);
+                            const displayValue = monthValue > 0 ? Math.round(monthValue) : '';
+                            
+                            return `
+                                <div class="yearly-box">
+                                    <div class="yearly-stack" style="height: ${stackHeight}%; background-color: ${categoryColors[category]}">
+                                        ${displayValue}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    <div class="month-labels">
+                        ${monthLabels.map(month => `<div>${month}</div>`).join('')}
+                    </div>
+                    
+                    <div style="margin-top: 1rem; font-size: 0.85rem; color: #5f6368;">
+                        ${data.goals.map(g => g.title).join(', ') || 'No goals in this category yet'}
+                    </div>
+                `;
+                
+                container.appendChild(categoryCard);
+            });
+        }
+
+        function toggleHabit(goalId, dayIndex) {
+            const goal = goals.find(g => g.id === goalId);
+            goal.completedDays[dayIndex] = !goal.completedDays[dayIndex];
+            renderWeeklyView();
+            renderMonthlyView();
+            renderYearlyView();
+        }
+
+        function updateDailyApplications(goalId, dayIndex, value) {
+            const goal = goals.find(g => g.id === goalId);
+            goal.dailyApplications[dayIndex] = parseInt(value) || 0;
+            
+            // Auto-check the day if applications were submitted
+            if (parseInt(value) > 0) {
+                goal.completedDays[dayIndex] = true;
+            }
+            
+            renderWeeklyView();
+        }
+
+        function updateEarnings(goalId, value) {
+            const goal = goals.find(g => g.id === goalId);
+            goal.earnings = parseFloat(value) || 0;
+            renderWeeklyView();
+        }
+
+        function openAddGoalModal() {
+            document.getElementById('goal-modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('goal-modal').style.display = 'none';
+        }
+
+        function addGoal() {
+            const title = document.getElementById('goal-title').value;
+            const category = document.getElementById('goal-category').value;
+            const target = parseInt(document.getElementById('goal-target').value);
+            const type = document.getElementById('goal-type').value;
+            
+            if (title && category) {
+                const newGoal = {
+                    id: Date.now(),
+                    title: title,
+                    category: category,
+                    type: type
+                };
+
+                if (type === 'daily') {
+                    newGoal.weeklyTarget = target;
+                    newGoal.completedDays = [false, false, false, false, false, false, false];
+                    newGoal.earnings = 0;
+                } else {
+                    newGoal.instances = [];
+                }
+                
+                goals.push(newGoal);
+                renderWeeklyView();
+                closeModal();
+                
+                // Clear form
+                document.getElementById('goal-title').value = '';
+                document.getElementById('goal-target').value = '';
+            }
+        }
+
+        function addInstance(goalId) {
+            const goal = goals.find(g => g.id === goalId);
+            goal.instances.push(new Date());
+            renderWeeklyView();
+            renderMonthlyView();
+            renderYearlyView();
+        }
+
+        function calculateYearlyData() {
+            const yearlyData = {
+                totalEarnings: 0,
+                totalApplications: 0,
+                totalSessions: 0,
+                totalHours: 0,
+                monthlyData: {
+                    finances: Array(12).fill(0),
+                    'social-media': Array(12).fill(0),
+                    fitness: Array(12).fill(0),
+                    startup: Array(12).fill(0),
+                    learning: Array(12).fill(0)
+                }
+            };
+
+            goals.forEach(goal => {
+                if (goal.type === 'instance') {
+                    goal.instances.forEach(instance => {
+                        const date = new Date(instance);
+                        const month = date.getMonth();
+                        yearlyData.monthlyData[goal.category][month]++;
+                        if (goal.category === 'fitness') yearlyData.totalSessions++;
+                    });
+                } else {
+                    goal.completedDays.forEach((completed, index) => {
+                        if (completed) {
+                            const today = new Date();
+                            const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay() + index + 1);
+                            const month = date.getMonth();
+                            if (goal.title === "UGC & Content Brand Deals") {
+                                yearlyData.totalApplications += goal.dailyApplications[index];
+                                yearlyData.monthlyData['social-media'][month] += goal.dailyApplications[index];
+                                yearlyData.totalEarnings += goal.earnings;
+                                yearlyData.monthlyData.finances[month] += goal.earnings;
+                            } else if (goal.category === 'learning') {
+                                yearlyData.totalHours++;
+                                yearlyData.monthlyData.learning[month]++;
+                            }
+                        }
+                    });
+                }
+            });
+
+            return yearlyData;
+        }
+
+        // Initialize the app
+        renderWeeklyView();
+    </script>
+</body>
+</html>
